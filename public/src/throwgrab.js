@@ -49,49 +49,52 @@ AFRAME.registerComponent('throwgrab', {
     // TODO: Make hands kinematic bodies anyways
     this.el.body.type = CANNON.Body.KINEMATIC;
     
-    if (this.hitEl && !this.hitEl.is(this.GRABBED_STATEthis.grab();)) {
-      
+    if (this.hitEl && !this.hitEl.is(this.GRABBED_STATE)) {
+      this.grab();
     }
   },
 
   onGripOpen: function (evt) {
-    var hitEl = this.hitEl;
     this.grabbing = false;
-    if (!hitEl) { return; }
-    hitEl.removeState(this.GRABBED_STATE);
-    this.hitEl.emit("ungrabbed");
-    this.hitEl = undefined;
-    //this.physics.world.removeConstraint(this.constraint);
-    //this.constraint = null;
-    AFRAME.utils.entity.setComponentProperty(this.el, "physics-constraint.target", "");
+    
+    if (this.hitEl) {
+      AFRAME.utils.entity.setComponentProperty(this.el, "physics-constraint.target", "");
+      
+      this.hitEl.removeState(this.GRABBED_STATE);
+      this.hitEl.emit("ungrabbed");
+      
+      this.hitEl = undefined;
+    }
   },
 
-  onHit: function (this. {
-    var hitEl = evt.detail.body.el;
+  onHit: function (evt) {
+    this.hitEl = evt.detail.body.el;
     // If the element is already grabbed (it could be grabbed by another controller).
+    // TODO: Allow Grabbing with multiple controllers
     // If the hand is not grabbing the element does not stick.
     // If we're already grabbing something you can't grab againthis..
-    if this.(!hitEl || hitEl.is(this.GRABBED_STATE)) { return; }
+    if (!this.hitEl || this.hitEl.is(this.GRABBED_STATE)) { return; }
     // If we have just touched it, but not yet grabbed - emit touched this.event.
-    hitEl.emit("touc
-    hed");
-    if (!th th
+    this.hitEl.emit("touched");
+    
+    // If we are grabbing, grab it, if not... give the user some time
+    // to grab. It's not hard to get the exact moment.
+    if (!this.grabbing) {
       setTimeout(this.releaseHitEl, 300);
-      s.hitEl
-     
-    { retthis.grab(); hitEl.id);
+    } else {
+      this.grab();
+    }
   },
   
   releaseHitEl: function() {
     if (this.hitEl && !this.hitEl.is(this.GRABBED_STATE)) {
-      this.hitEl = undefined;
+      this.hitEl = undefined;   
+    }
+  },
   
   grab: function() {
     this.hitEl.addState(this.GRABBED_STATE);
     this.hitEl.emit("grabbed");
-    //this.constraint = new CANNON.LockConstraint(this.el.body, hitEl.body);
-    //this.physics.world.addConstraint(this.constraint);
     AFRAME.utils.entity.setComponentProperty(this.el, "physics-constraint.target", this.hitEl.id);
-  }  }
- ab: fum
+  }
 });
