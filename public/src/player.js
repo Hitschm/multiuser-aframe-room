@@ -44,3 +44,9 @@ var urlParams;
     AFRAME.registerComponent('playername', playername);
 
 })();
+
+AFRAME.registerComponent('do-something', {
+  init: function () {
+    AFRAME.utils.entity.setComponentProperty(this.el, "networked-scene.webrtcAudio", urlParams["mic"]);
+  }
+});

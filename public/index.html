@@ -1,254 +1,85 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta charset="utf-8">
-
-    <title>A-FRAME Multiuser Room</title>
-    <meta name="description" content="AFRAME Multiuser Room" />
-
-    <link rel="stylesheet" type="text/css" href="style.css" />
-    <!--<script src="https://rawgit.com/aframevr/aframe/168acf2/dist/aframe-master.min.js"></script> --> 
-    <!-- </-!><script src="https://rawgit.com/aframevr/aframe/master/dist/aframe-v0.5.0.min.js"></script> --> <!-- 0.5. No Shadows. -->
- <!--  <script src="https://rawgit.com/aframevr/aframe/6ea92fa/dist/aframe-master.min.js"></script> --> <!-- Most stable master version. Text bug. -->
-  <script src="https://rawgit.com/aframevr/aframe/7a0cc9b/dist/aframe-master.min.js"></script> <!-- Newest master version. Problem with hands. Text bug is fixed. -->
-  
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/1.4.5/socket.io.min.js"></script>
-    <script src="easyrtc/easyrtc.js"></script>
-    <script src="https://rawgit.com/protyze/networked-aframe/master/dist/networked-aframe.js?v17"></script>
-    <script src="src/toy-generator.js"></script>
-    <script src="src/ownership-indicator.js"></script>
-    <script src="src/throwgrab.js"></script>
-    <script src="https://cdn.rawgit.com/zcanter/aframe-gradient-sky/master/dist/gradientsky.min.js"></script>
-    <script src="https://rawgit.com/donmccurdy/aframe-physics-system/master/dist/aframe-physics-system.min.js"></script>
-    <script src="https://cdn.glitch.com/8b8b2e46-cc27-4ffd-81bf-29c2f376c88c%2Faframe-log-component.min.js?1497641519811"></script>
-    <script src="https://unpkg.com/aframe-randomizer-components@^3.0.1/dist/aframe-randomizer-components.min.js"></script>
-    <script src="src/physics-constraint.js"></script>
-    <script src="src/physics-lerp.js"></script>  
-    <script src="https://cdn.glitch.com/8b8b2e46-cc27-4ffd-81bf-29c2f376c88c%2Faframe-teleport-controls.min.js?1498305003961"></script>
-    <script src="https://rawgit.com/ngokevin/kframe/master/components/audioanalyser/dist/aframe-audioanalyser-component.min.js"></script>
-    <script src="https://rawgit.com/ngokevin/kframe/master/components/audioanalyser/examples/components/audioanalyser-volume-scale.js"></script>
-    <script src="src/player.js"></script>
-  
-  <script>
-      // Define custom schema for syncing avatar components
-      var avatarSchema = {
-        template: '#avatar-template',
-        components: [
-          'position',
-          'rotation',
-          {
-            selector: '.head',
-            component: 'material'
-          },
-          {
-            selector: '.name',
-            component: 'value'
-          }
-        ]
-      };
-      NAF.schemas.add(avatarSchema);
-    
-      var handLeftSchema = {
-        template: '#hand-left-template',
-        components: [
-          'position',
-          'rotation',
-          'physics-constraint'
-        ]
-      };
-      NAF.schemas.add(handLeftSchema);
-    
-      var handRightSchema = {
-        template: '#hand-right-template',
-        components: [
-          'position',
-          'rotation',
-          'physics-constraint'
-        ]
-      };
-      NAF.schemas.add(handRightSchema);
-
-      // Called by Networked-Aframe when connected to server
-      function onConnect () {     
-        AFRAME.log('Connection successful...');
-      }
-    </script>
 </head>
+<style>
+  
+html {
+  height: 1000px;
+  color: #FAFAFA;
+  background-color: #6666ff;
+  font-family: monospace;
+  font-size: 20px;
+}
+h1 {
+  font-weight: 300;
+}
+body {
+  background-image: linear-gradient(#ff6666, #6666ff);
+  min-height: 1000px;
+  margin: 0px 0px 0px 0px;
+}
+
+a {
+  text-decoration:none;
+}
+  
+.overlayBtn {
+    width: 150px;
+    height: 50px;
+    background-color: white;
+    font-size: 18px;
+    font-weight: bold;
+    text-transform: uppercase;
+    line-height: 50px;
+    text-align: center;
+    color: #ff6666;
+    margin:100px auto 50px auto;
+    font-family: Arial;
+}
+.content
+  {
+    padding: 20px 20% 20% 10%;
+  }
+</style>
 <body>
-
-<a-scene physics="debug: false; restitution: 0.8;" debug networked-scene="debug: true; webrtc:true; webrtcAudio: true;" shadow="type: pcfsoft">
-    <a-assets timeout="60000">
-      <a-mixin id="avatar-head"
-                 collada-model="#head"
-                 scale="0.15 0.15 0.15"
-                 position="0 0 0">
-      </a-mixin>
-      
-      <!-- Avatar -->
-      <script id="avatar-template" type="text/html">
-        <a-entity scale="0.5 0.5 0.5" class="avatar">
-          <a-sphere class="head"
-            scale="0.45 0.5 0.4"
-            random-color
-            shadow="receive: true"
-          ></a-sphere>
-          <a-entity class="face"
-            position="0 0.05 0"
-          >
-            <a-sphere class="eye"
-              color="#efefef"
-              position="0.16 0.1 -0.35"
-              scale="0.12 0.12 0.12"
-            >
-              <a-sphere class="pupil"
-                color="#000"
-                position="0 0 -1"
-                scale="0.2 0.2 0.2"
-              ></a-sphere>
-            </a-sphere>
-            <a-sphere class="eye"
-              color="#efefef"
-              position="-0.16 0.1 -0.35"
-              scale="0.12 0.12 0.12"
-            >
-              <a-sphere class="pupil"
-                color="#000"
-                position="0 0 -1"
-                scale="0.2 0.2 0.2"
-              ></a-sphere>
-            </a-sphere>
-            <a-sphere id="mouth"
-              color="white"
-              position="0 -0.2 -0.4"
-              scale="0.2 0.02 0.03"
-            ></a-sphere>
-          </a-entity>
-        </a-entity>
-      </script>
-         
-      <!-- HAND LEFT -->
-      <script id="hand-left-template" type="text/html">
-        <a-entity scale="1 1 1">
-          <a-entity class="hand"
-            blend-character-model="#left-hand-model"
-            shadow="receive: true; cast: true;"
-            static-body="shape: sphere; sphereRadius: 0.03;">
-            </a-entity>
-        </a-entity>
-      </script>
-      
-      <!-- HAND RIGHT -->
-      <script id="hand-right-template" type="text/html">
-        <a-entity scale="1 1 1">
-          <a-entity class="hand"
-            blend-character-model="#right-hand-model"
-            shadow="receive: true; cast: true;"
-            static-body="shape: sphere; sphereRadius: 0.03;">
-            </a-entity>
-        </a-entity>
-      </script>
-      
-      <a-mixin id="toy-template1" random-color shadow="receive: true" geometry="primitive:box; height:0.3; width:0.3; depth:0.3" ownership-indicator></a-mixin>
-      
-      <a-asset-item id="left-hand-model" src="https://cdn.aframe.io/controllers/oculus-hands/v2/leftHand.json"></a-asset-item>
-      <a-asset-item id="right-hand-model" src="https://cdn.aframe.io/controllers/oculus-hands/v2/rightHand.json"></a-asset-item>
-            
-      <img id="grid" src="https://img.gs/bbdkhfbzkk/stretch/https://i.imgur.com/25P1geh.png" crossorigin="anonymous">
-      <audio id="sphere-hum" src="https://cdn.glitch.com/8b8b2e46-cc27-4ffd-81bf-29c2f376c88c%2Fhum001.ogg?1497607342542"></audio>
-  </a-assets>
-
-    <!-- PLAYER -->
-    <a-entity id="player-rot" rotation="0 0 0">
-        <a-entity id="player-pos" position="0 0 0">
-
-            <!-- HANDS -->
-          <a-entity position="0 0 0">
-            <a-entity id="left-hand" teleport-controls="collisionEntities: #floor-white; hitCylinderColor: #ff6464; hitCylinderRadius: 0.2; hitCylinderHeight: 0.2; curveHitColor; #4d4fc6; curveLineWidth: 0.01; " 
-                      static-body="shape: sphere; sphereRadius: 0.03;" hand-controls="left" networked="template:#hand-left-template; showLocalTemplate:false; physics:true" physics-constraint throwgrab></a-entity>
-            <a-entity id="right-hand" teleport-controls="collisionEntities: #floor-white; hitCylinderColor: #ff6464; hitCylinderRadius: 0.2; hitCylinderHeight: 0.2; curveHitColor; #4d4fc6; curveLineWidth: 0.01; " 
-                      static-body="shape: sphere; sphereRadius: 0.03;" hand-controls="right" networked="template:#hand-right-template; showLocalTemplate:false; physics:true" physics-constraint throwgrab></a-entity>
-          </a-entity>
-            
-          <!-- PLAYER -->
-          <a-entity id="player" random-color position="0 0 0">
-
-              <a-camera networked="template:#avatar-template; showLocalTemplate:false;" wasd-controls-enabled="true" look-controls-enabled="true">
-              </a-camera>
-
-          </a-entity>
-        </a-entity>
-    </a-entity>
+<div class="content">
+  <h1>A-Frame Networked-Physics-Playground</h1>
+  <h2>Dev Version</h2>
+  <p>
+    <i>by Jan Azzati (@protyze) and Christian Schaer (@chrisschaer)</i>
+  </p>
+  </br>
+  <ul>
+    <li>Synced physics accross multiple clients using WebRTC.</li>
+    <li>Physics are synced in realtime with snapshots and interpolated on each client between the snapshots (different interpolation strategies for different states).</li>
+    <li>Throwing things at each other creates believable and predictable physics behaviour so that the remote user can catch things mid-air.</li>
+    <li>Objects can be touched, grabbed and manipulated by multiple players simultaneously while maintaining realistic and believable physics behabiour.</li>
+    <li>Color of object indicates the current owner (client). Physics behaviour of that object is at that point only calculated on local client and snapshots are broadcasted to the other clients in order to interpolate (Altough the other clients will always maintain physics characteristics for each entity – allowing them to touch/grab/manipulate them at any time). The local physics system on all clients still keeps track of all collisions and takes over an object if needed.</li>
+    <li>Soft shadows and a grabbable point light showcase what can be done in terms of realtime shadows with A-Frame.</li>
+  </ul>
+  </br>
+  <p>
+    Special thanks to:
+  </p>
+  <ul>
+    <li>A-Frame. https://aframe.io/</li>
+    <li>networked-aframe by Hayden Lee. https://github.com/haydenjameslee/networked-aframe</li>
+    <li>aframe-physics-system by Don McCurdy (based on CANNON.js). https://github.com/haydenjameslee/networked-aframe</li>
+    <li>and many other contributors to the A-Frame community</li>
+  </ul>
   
-    <!-- SYNCHED ELEMENTS -->
-    <a-box id="box001" dynamic-body ownership-indicator shadow="receive: true, cast: true" class="grab" height="0.2" width="0.2" depth="0.2" position="1 0.2 1" networked-share="networkId:box001; components: material; physics:true" material="color: green"></a-box>
-    <a-box id="box002" dynamic-body ownership-indicator shadow="receive: true, cast: true" class="grab" height="0.2" width="0.2" depth="0.2" position="1 0.2 1.5" networked-share="networkId:box002; components: material; physics:true" material="color: orange"></a-box>
-    <a-box id="box003" dynamic-body ownership-indicator shadow="receive: true, cast: true" class="grab" height="0.2" width="0.2" depth="0.2" position="1 0.2 2" networked-share="networkId:box003; components: material; physics:true" material="color: red"></a-box>
-    <a-box id="box004" dynamic-body ownership-indicator shadow="receive: true, cast: true" class="grab" height="0.2" width="0.2" depth="0.2" position="-1 0.2 1" networked-share="networkId:box004; components: material; physics:true" material="color: yellow"></a-box>
-    <a-box id="box005" dynamic-body ownership-indicator shadow="receive: true, cast: true" class="grab" height="0.2" width="0.2" depth="0.2" position="-1 0.2 1.5" networked-share="networkId:box005; components: material; physics:true" material="color: blue"></a-box>
-    <a-box id="box006" dynamic-body ownership-indicator shadow="receive: true, cast: true" class="grab" height="0.2" width="0.2" depth="0.2" position="-1 0.2 2" networked-share="networkId:box006; components: material; physics:true" material="color: purple"></a-box>
-      
-    <a-sphere id="lightball001" dynamic-body="mass: 0.1;" class="grab" radius="0.1" position="0 1.3 4.5" networked-share="networkId:lightball001; components: material; physics:true" material="color: white; shader: flat;"
-              sound="src: #sphere-hum; autoplay: true; loop: true; volume: 0.2;">
-        <a-entity light="type: point; color: white; shadowCameraNear: 0.1; castShadow:true; shadowMapHeight: 512, shadowMapWidth: 512; intensity: 1.4; distance: 5; decay: 3"
-				position="0 0 0"></a-entity>
-        </a-sphere>
-   <!-- <a-sphere id="lightball002" dynamic-body="mass: 0.1;" class="grab" radius="0.1" position="0.5 1.3 4.5" networked-share="networkId:lightball002; components: material; physics:true" material="color: blue; shader: flat;"
-              sound="src: #sphere-hum; autoplay: true; loop: true; volume: 0.5;">
-        <a-entity light="type: point; color: blue; shadowCameraNear: 0.1; castShadow:true; shadowMapHeight: 512, shadowMapWidth: 512; intensity: 1.4; distance: 5; decay: 3"
-				position="0 0 0"></a-entity>
-        </a-sphere> -->
-   <!--<a-sphere id="lightball003" dynamic-body="mass: 0.1;" class="grab" radius="0.1" position="-0.5 1.3 4.5" networked-share="networkId:lightball003; components: material; physics:true" material="color: red; shader: flat;"
-              sound="src: #sphere-hum; autoplay: true; loop: true; volume: 0.5;">
-        <a-entity light="type: point; color: red; shadowCameraNear: 0.1; castShadow:true; shadowMapHeight: 512, shadowMapWidth: 512; intensity: 1.4; distance: 5; decay: 3"
-				position="0 0 0"></a-entity>
-        </a-sphere> -->
-    <a-sphere id="ball002" playercolor dynamic-body ownership-indicator shadow="receive: true, cast: true" class="grab" radius="0.3" position="0 0.15 -1.5" networked-share="networkId:ball002; components: material; physics:true" material="color: yellow"></a-sphere>
-    <a-sphere id="ball003" playercolor dynamic-body ownership-indicator shadow="receive: true, cast: true" class="grab" radius="0.2" position="0 0.1 -0.5" networked-share="networkId:ball003; components: material; physics:true" material="color: yellow"></a-sphere>
- 
-    <a-box id="bat001" dynamic-body ownership-indicator shadow="receive: true, cast: true" class="grab" position="1 0.3 0" rotation="0 0 0" depth="0.1" height="0.1" width="1.5" networked-share="networkId:bat001; components: material, constraint; physics:true" material="color: red"></a-box>
-    <a-box id="bat002" dynamic-body ownership-indicator shadow="receive: true, cast: true" class="grab" position="-1 0.3 0" rotation="0 0 0" depth="0.1" height="0.1" width="1.5" networked-share="networkId:bat002; components: material, constraint; physics:true" material="color: blue"></a-box>
-    
-    <a-box id="stick001" dynamic-body="mass: 2;" ownership-indicator shadow="receive: true, cast: true" class="grab" position="-1 0.8 -3" rotation="0 0 0" depth="0.04" height="0.04" width="0.8" networked-share="networkId:stick001; components: material, constraint; physics:true" material="color: blue"></a-box>
-    <a-sphere id="ballattached001" dynamic-body="mass: 1;" constraint="target: #stick001; type: pointToPoint; pivot: 0.8 0 0;" ownership-indicator shadow="receive: true, cast: true;" radius="0.05" position="-1.8 0.8 -3" networked-share="networkId:ballattached001; components: material; physics:true" material="color: red"></a-sphere>
-
-    <a-plane id="playerInfobox" playercolor playername text="width: 4; align: center;" height="0.3" width="3" position="0 1.15 -4.8"></a-plane>
-
-  
-  <!-- ROOM -->
-  <a-entity id="floor-lines" shadow="receive: false" position="0 0.01 0" rotation="-90 0 0" geometry="primitive: plane; width: 10; height: 10;" material="src: #grid; repeat: 20 20; transparent: true; metalness:0.6; roughness: 0.4;"></a-entity>
-  <a-entity id="floor-white" static-body shadow="receive: true" position="0 0 0" rotation="-90 0 0" geometry="primitive: box; width: 10; height: 10; depth: 0.01;" material="color: white; metalness: 0.1; roughness: 0.1;"></a-entity>
-  
-  <a-box id="wall001" static-body shadow="receive: true;" height="1" width="2" depth="10" position="0 0.55 -5" rotation="0 90 0" material="color: white;"></a-box>
-  <a-box id="wall002" static-body shadow="receive: true;" height="1" width="2" depth="8" position="-4 0.55 0" rotation="0 0 0" material="color: white;"></a-box>
-  <a-box id="wall003" static-body shadow="receive: true;" height="1" width="2" depth="10" position="0 0.55 5" rotation="0 90 0" material="color: white;"></a-box>
-  <a-box id="wall004" static-body shadow="receive: true;" height="1" width="2" depth="8" position="4 0.55 0" rotation="0 0 0" material="color: white;"></a-box>
-
-  
-  <!-- OBJECTS -->
-  
-  <!-- LIGHTS -->
-  <a-entity light="type: ambient; color: #BBB; intensity: 0.8"></a-entity>
-  <!-- <a-entity light="type: hemisphere; color: #FF4B64; groundColor: #66ff66; intensity: 1"></a-entity> -->
-  <a-entity light="type: spot; angle: 45; castShadow:true; shadowMapHeight: 512, shadowMapWidth: 512; intensity: 1; distance: 20; decay: 3; penumbra: 0.2;" rotation="-90 0 0" position="0 6 0"></a-entity>
-  
-  <a-gradient-sky material="shader: gradient; topColor: 255 100 100; bottomColor: 100 100 255;"></a-gradient-sky>
-  
-  <!-- INFOWALL -->
-  <a-entity log geometry="primitive: plane; height: 2; width: 2;" material="color: black; opacity: 0.4;" text="color: white" position="0 2.3 -4.8"></a-entity>
-  
-  <script>
-      AFRAME.log('Name: ' + urlParams["name"]);
-      AFRAME.log('Color: ' + urlParams["color"]);
-  </script>
+  <div style="text-align:center;">
+    <a href="./aframe-networked-physics-playground.html">
+      <div class="overlayBtn">Start</div>
+    </a>
   
   
-</a-scene>
+    <img src="https://cdn.glitch.com/8b8b2e46-cc27-4ffd-81bf-29c2f376c88c%2Favatars_all.png?1498776639815" alt="Mountain View" style="width:500px;margin-bottom: 50px;">
   
-
-<script type="text/javascript">
-    // CUSTOM JS
-</script>
-
+  </div>
+  
+</div>
+  
 </body>
 </html>
