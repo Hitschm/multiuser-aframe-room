@@ -44,6 +44,4 @@ We are planning to add more avatars over time and allow everyone to choose the o
 
 Looking forward to hearing from you and seeing all the other projects!
 
-Best
-Christian and Jan
 =======
